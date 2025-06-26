@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Income Tax Calculator</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; background: #f0f8f5; color: #064635; }
+    h1, h2 { color: #056d4a; }
+    .logo { display: block; max-width: 150px; margin: 0 auto 1rem; }
+    .step { display: none; }
+    .step.active { display: block; }
+    label { display: block; margin: .5rem 0 .2rem; }
+    input, select { width: 100%; padding: .6rem; margin-bottom: 1rem; border: 1px solid #9ad3bc; border-radius: 4px; }
+    .error { color: red; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 0.5rem; }
+    button { padding: .6rem 1.2rem; background: #04a77b; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
+    button:hover { background: #037f60; }
+    .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
+    .summary { background: #e3f6f5; padding: 1rem; margin-top: 1rem; border: 1px solid #9ad3bc; border-radius: 4px; }
+    .result, .compare { font-size: 1.1rem; font-weight: bold; margin-top: 1rem; color: #056d4a; }
+  </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
+</head>
+<body>
+  <img src="/mnt/data/ONE.FINANCEORIGINAL.png" alt="One Finance Logo" class="logo" />
+  <h1>Income Tax Calculator</h1>
+  <p>(For F.Y 2024-2025 / A.Y 2025-2026)</p>
+  <form id="taxForm">
+    <!-- Step 1 -->
+    <section class="step active" data-step="1">
+      <h2>1. Basic Info</h2>
+      <label>Full Name</label><input type="text" id="name" required />
+      <label>Age Group</label><select id="ageGroup"><option value="below60">Below 60</option><option value="sixtyplus">60 & Above</option></select>
+      <label>Tax Regime</label><select id="regime"><option value="old">Old Regime</option><option value="new">New Regime</option></select>
+      <div class="nav-buttons"><span></span><button type="button" id="nextBtn1">Next &rarr;</button></div>
+    </section>
+    <!-- Step 2 -->
+    <section class="step" data-step="2">
+      <h2>2. Salary Income</h2>
+      <label>Received salary?</label><select id="hasSalary"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="salaryFields">
+        <label>Gross Salary (Rs.)</label><input type="number" id="grossSalary" min="0" />
+        <label>Basic Pay (Rs.)</label><input type="number" id="basicPay" min="0" />
+        <label>HRA Received (Rs.)</label><input type="number" id="hraReceived" min="0" />
+        <label>Rent Paid (Rs.)</label><input type="number" id="rentPaid" min="0" />
+        <label>Standard Deduction (Rs.)</label><input type="number" id="stdDeduction" min="0" value="50000" />
+        <div class="error" id="errStdDeduction"></div>
+        <label>Professional Tax (Rs.)</label><input type="number" id="profTax" min="0" value="0" />
+        <div class="summary" id="salarySummary">Net Salary Income: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn2">Next &rarr;</button></div>
+    </section>
+    <!-- Step 3 -->
+    <section class="step" data-step="3">
+      <h2>3. Business Income</h2>
+      <label>Received business income?</label><select id="hasBusiness"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="businessFields">
+        <label>Business Income (Rs.)</label><input type="number" id="businessIncome" min="0" />
+        <div class="summary" id="businessSummary">Net Business Income: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn3">Next &rarr;</button></div>
+    </section>
+    <!-- Step 4 -->
+    <section class="step" data-step="4">
+      <h2>4. House Property</h2>
+      <label>Rent or loan?</label><select id="hasHouseProperty"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="houseFields">
+        <label>Rent Received (Rs.)</label><input type="number" id="rentReceived" min="0" />
+        <label>Home Loan Interest (Rs.)</label><input type="number" id="homeLoanInterest" min="0" />
+        <div class="summary" id="houseSummary">Net House Property Income: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn4">Next &rarr;</button></div>
+    </section>
+    <!-- Step 5 -->
+    <section class="step" data-step="5">
+      <h2>5. Other Sources</h2>
+      <label>Interest/Dividend?</label><select id="hasOther"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="otherFields">
+        <label>Savings Interest (Rs.)</label><input type="number" id="savingsInterest" min="0" />
+        <label>FD Interest (Rs.)</label><input type="number" id="fdInterest" min="0" />
+        <label>Dividend (Rs.)</label><input type="number" id="dividendReceived" min="0" />
+        <div class="summary" id="otherSummary">Net Other Income: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn5">Next &rarr;</button></div>
+    </section>
+    <!-- Step 6 -->
+    <section class="step" data-step="6">
+      <h2>6. Capital Gains</h2>
+      <label>Sold shares?</label><select id="hasCG"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="cgFields">
+        <label>STCG (Rs.)</label><input type="number" id="stcgAmount" min="0" />
+        <label>LTCG (Rs.)</label><input type="number" id="ltcgAmount" min="0" />
+        <div class="summary" id="cgSummary">STCG: Rs. 0, LTCG: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn6">Next &rarr;</button></div>
+    </section>
+    <!-- Step 7 -->
+    <section class="step" data-step="7">
+      <h2>7. 80C / 80CCD(1B)</h2>
+      <label>Investments?</label><select id="has80C"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="field80C">
+        <label>80C (Max ₹150k)</label><input type="number" id="ded80C" min="0" max="150000" />
+        <label>80CCD(1B) (Max ₹50k)</label><input type="number" id="ded80CCD1B" min="0" max="50000" />
+        <div class="summary" id="summary80C">Total: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn7">Next &rarr;</button></div>
+    </section>
+    <!-- Step 8 -->
+    <section class="step" data-step="8">
+      <h2>8. 80D (Health Insurance)</h2>
+      <label>Paid health insurance?</label><select id="has80D"><option value="yes">Yes</option><option value="no">No</option></select>
+      <div id="field80D">
+        <label>Health Check-up (Max ₹5k)</label><input type="number" id="selfHealthCheck" min="0" />
+        <label>Self/Family Ins. (Max ₹25k or ₹50k SC)</label><input type="number" id="selfInsurance" min="0" />
+        <label>Senior Ins. (Max ₹50k)</label><input type="number" id="seniorInsurance" min="0" />
+        <label>Medical Exp (Max ₹50k)</label><input type="number" id="medicalExp" min="0" />
+        <div class="summary" id="summary80D">Total 80D: Rs. 0</div>
+      </div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn8">Next &rarr;</button></div>
+    </section>
+    <!-- Step 9 -->
+    <section class="step" data-step="9">
+      <h2>9. Review & Compute</h2>
+      <div class="summary" id="finalSummary"></div>
+      <div class="result" id="taxResult"></div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="computeBtn">Compute & Compare &rarr;</button></div>
+    </section>
+    <!-- Step 10 -->
+    <section class="step" data-step="10">
+      <h2>10. Compare Regimes</h2>
+      <div class="compare" id="compareSummary"></div>
+      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="downloadPdfBtn">Download PDF</button><button type="button" id="finishBtn">Finish</button></div>
+    </section>
+  </form>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const steps = Array.from(document.querySelectorAll('.step'));
+      const data = {};
+      const round10 = v => Math.round(v/10)*10;
+      const toNum = id => parseFloat(document.getElementById(id).value) || 0;
+      // Conditional display
+      const cond = { hasSalary:'salaryFields', hasBusiness:'businessFields', hasHouseProperty:'houseFields', hasOther:'otherFields', hasCG:'cgFields', has80C:'field80C', has80D:'field80D' };
+      Object.entries(cond).forEach(([s,f])=>{ const sel=document.getElementById(s), fld=document.getElementById(f); sel.onchange=()=>fld.style.display=sel.value==='yes'?'block':'none'; sel.onchange(); });
+      const showStep = i => steps.forEach((s,idx)=>s.classList.toggle('active', idx===i-1));
+      const slabs={old:[250000,500000,1000000],new:[300000,600000,900000,1200000,1500000]};
+      const rates={old:[0,0.05,0.2,0.3],new:[0,0.05,0.1,0.15,0.2,0.3]};
+      function calcTax(i,r){let t=0,p=0;rates[r].forEach((rt,j)=>{const m=slabs[r][j]||Infinity; if(i>m){t+=(m-p)*rt;p=m;}else{t+=(i-p)*rt;p=i;} }); if(r==='new'&&i<=700000)t=Math.max(0,t-12500);return round10(t*1.04);}      
+      function collect(i){switch(i){case 0:data.name=document.getElementById('name').value;data.age=document.getElementById('ageGroup').value;data.regime=document.getElementById('regime').value;document.getElementById('stdDeduction').value=data.regime==='new'?75000:50000;break;case 1:const g=toNum('grossSalary'),s=toNum('stdDeduction');document.getElementById('errStdDeduction').textContent=s>g?'Cannot exceed gross salary':'';let net=0,hra=0;if(document.getElementById('hasSalary').value==='yes'){const b=toNum('basicPay'),hr=toNum('hraReceived'),r=toNum('rentPaid'),pt=toNum('profTax');hra=round10(Math.max(0,Math.min(hr,r-0.1*b,0.5*b)));net=round10(g-Math.min(s,g)-pt-hra);}data.salary=net;data.hraEx=hra;document.getElementById('salarySummary').innerHTML=`Net Salary: Rs. ${net}<br>HRA Exempt: Rs. ${hra}`;break;case 2:data.business=document.getElementById('hasBusiness').value==='yes'?round10(toNum('businessIncome')):0;document.getElementById('businessSummary').textContent=`Net Business: Rs. ${data.business}`;break;case 3:let hp=document.getElementById('hasHouseProperty').value==='yes'?round10(toNum('rentReceived')-toNum('homeLoanInterest')):0;data.house=Math.max(hp,-200000);document.getElementById('houseSummary').textContent=`Net House: Rs. ${data.house}`;break;case 4:data.other=document.getElementById('hasOther').value==='yes'?round10(toNum('savingsInterest')+toNum('fdInterest')+toNum('dividendReceived')):0;document.getElementById('otherSummary').textContent=`Net Other: Rs. ${data.other}`;break;case 5:if(document.getElementById('hasCG').value==='yes'){data.stcg=round10(toNum('stcgAmount'));data.ltcg=round10(toNum('ltcgAmount'));}else{data.stcg=0;data.ltcg=0;}document.getElementById('cgSummary').textContent=`STCG: Rs. ${data.stcg}, LTCG: Rs. ${data.ltcg}`;break;case 6:let c1=toNum('ded80C'),c2=toNum('ded80CCD1B');c1=Math.min(c1,150000);c2=Math.min(c2,50000);data.d80C=round10(c1);data.d80CCD=round10(c2);document.getElementById('summary80C').textContent=`Total: Rs. ${round10(data.d80C+data.d80CCD)}`;break;case 7:let hc=toNum('selfHealthCheck'),ip=toNum('selfInsurance'),sip=toNum('seniorInsurance'),me=toNum('medicalExp');hc=Math.min(hc,5000);ip=Math.min(ip,data.age==='sixtyplus'?50000:25000);sip=Math.min(sip,50000);me=Math.min(me,50000);data.d80D=round10(hc+ip+sip+me);document.getElementById('summary80D').textContent=`Total 80D: Rs. ${data.d80D}`;break;} }
+      function finalize(){const gross=round10((data.salary||0)+(data.business||0)+(data.house||0)+(data.other||0)+(data.stcg||0)+(data.ltcg||0));const ded=round10((data.d80C||0)+(data.d80CCD||0)+(data.d80D||0));const net=round10(gross-ded);document.getElementById('finalSummary').innerHTML=`<p>Gross: Rs. ${gross}</p><p>Deduction: Rs. ${ded}</p><p>Net Taxable: Rs. ${net}</p>`;}      
+      // Bind real-time
+      ['salaryFields','businessFields','houseFields','otherFields','cgFields','field80C','field80D'].forEach((id,idx)=>{document.querySelectorAll(`#${id} input, #${id} select`).forEach(el=>el.addEventListener('input',()=>collect(idx+1)));});
+      // Next
+      for(let i=1;i<=8;i++){document.getElementById('nextBtn'+i).addEventListener('click',()=>{collect(i-1);if(i===8)finalize();showStep(i+1);});}
+      // Back
+      document.querySelectorAll('.backBtn').forEach(btn=>btn.addEventListener('click',()=>{const i=+btn.closest('.step').dataset.step;showStep(i-1);}));
+      // Compute & Compare
+      document.getElementById('computeBtn').addEventListener('click',()=>{collect(8);finalize();const net=round10((data.salary||0)+(data.business||0)+(data.house||0)+(data.other||0)+(data.stcg||0)+(data.ltcg||0)-(data.d80C||0)-(data.d80CCD||0)-(data.d80D||0));const oldT=calcTax(net,'old'),newT=calcTax(net,'new');document.getElementById('taxResult').textContent=`Old: Rs. ${oldT}, New: Rs. ${newT}`;document.getElementById('compareSummary').innerHTML=`<p>Old: Rs. ${oldT}</p><p>New: Rs. ${newT}</p><p>Diff: Rs. ${Math.abs(oldT-newT)}</p>`;showStep(10);});
+      // Download PDF
+      document.getElementById('downloadPdfBtn').addEventListener('click',()=>{html2pdf().from(document.getElementById('taxForm')).save('tax-summary.pdf');});
+      // Finish
+      document.getElementById('finishBtn').addEventListener('click',()=>showStep(1));
+    });
+  </script>
+</body>
+</html>
