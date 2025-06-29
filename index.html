@@ -1,165 +1,631 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Income Tax Calculator</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 700px; margin: 2rem auto; background: #f0f8f5; color: #064635; }
-    h1, h2 { color: #056d4a; }
-    .logo { display: block; max-width: 150px; margin: 0 auto 1rem; }
-    .step { display: none; }
-    .step.active { display: block; }
-    label { display: block; margin: .5rem 0 .2rem; }
-    input, select { width: 100%; padding: .6rem; margin-bottom: 1rem; border: 1px solid #9ad3bc; border-radius: 4px; }
-    .error { color: red; font-size: 0.9em; margin-top: -0.5rem; margin-bottom: 0.5rem; }
-    button { padding: .6rem 1.2rem; background: #04a77b; color: #fff; border: none; border-radius: 4px; cursor: pointer; }
-    button:hover { background: #037f60; }
-    .nav-buttons { display: flex; justify-content: space-between; gap: 1rem; margin-top: 1rem; }
-    .summary { background: #e3f6f5; padding: 1rem; margin-top: 1rem; border: 1px solid #9ad3bc; border-radius: 4px; }
-    .result, .compare { font-size: 1.1rem; font-weight: bold; margin-top: 1rem; color: #056d4a; }
-  </style>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.9.2/html2pdf.bundle.min.js"></script>
-</head>
-<body>
-  <img src="/mnt/data/ONE.FINANCEORIGINAL.png" alt="One Finance Logo" class="logo" />
-  <h1>Income Tax Calculator</h1>
-  <p>(For F.Y 2024-2025 / A.Y 2025-2026)</p>
-  <form id="taxForm">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vishnu Income Tax Calculator</title>
+<style>
+  :root {
+    --primary-color: #0FBF61;
+    --accent-color: #14C8C0;
+    --bg-color: #F0FFF4;
+    --font-family: 'Poppins', sans-serif;
+  }
+  body {
+    font-family: var(--font-family);
+    background: var(--bg-color);
+    color: var(--primary-color);
+    margin: 0; padding: 0;
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh;
+  }
+  .wizard {
+    background: #fff;
+    border-radius: 16px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+    width: 100%; max-width: 640px;
+    padding: 2rem;
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  .progress-bar-container {
+    background-color: #e0e0e0;
+    border-radius: 100px;
+    height: 10px;
+    margin-bottom: 0.5rem;
+    overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%;
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    width: 0%;
+    transition: width 0.3s ease;
+  }
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #444;
+    margin-bottom: 1.5rem;
+  }
+  .step { display: none; }
+  .step.active { display: block; }
+  h2, h3 {
+    margin-top: 0;
+    color: var(--primary-color);
+    font-weight: 600;
+  }
+  h2 { font-size: 1.6rem; }
+  h3 { font-size: 1.2rem; }
+  label {
+    display: block;
+    margin: 1rem 0 .5rem;
+    font-weight: 500;
+  }
+  input, select {
+    width: 100%;
+    padding: .6rem .75rem;
+    font-size: 1rem;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(15, 191, 97, 0.2);
+  }
+  button {
+    margin-top: 1.5rem;
+    padding: 0.85rem 1.75rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.3s ease;
+  }
+  button:hover {
+    opacity: 0.95;
+  }
+  .next-btn {
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    color: #fff;
+    margin-right: .5rem;
+  }
+  .prev-btn {
+    background: #f0f0f0;
+    color: #333;
+  }
+  .section-separator {
+    margin: 1.5rem 0;
+    border-top: 2px dashed #ddd;
+  }
+  .error {
+    color: #D8000C;
+    background-color: #FFBABA;
+    padding: 0.5rem;
+    font-size: .9rem;
+    margin-top: .5rem;
+    border-radius: 6px;
+  }
+  .result-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .result-table th, .result-table td {
+    border: 1px solid #ddd;
+    padding: .75rem;
+    text-align: center;
+  }
+  .result-table th {
+    background: #f8f8f8;
+    font-weight: 600;
+  }
+  .download-btn {
+    background: linear-gradient(to right, var(--primary-color), var(--accent-color));
+    color: #fff;
+    padding: 0.85rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    margin-top: 1.5rem;
+    font-weight: 600;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @media (max-width: 480px) {
+    .wizard {
+      padding: 1rem;
+    }
+    h2 {
+      font-size: 1.25rem;
+    }
+    input, select {
+      font-size: 0.9rem;
+      padding: 0.5rem;
+    }
+  }
+</style>
+
+<div class="wizard">
+  <div class="progress-bar-container">
+    <div class="progress-bar" id="progressBar"></div>
+  </div>
+  <div class="progress-labels">
+    <span>Basic Info</span>
+    <span>Salary</span>
+    <span>House</span>
+    <span>Other</span>
+    <span>80C</span>
+    <span>80D</span>
+    <span>Review</span>
+  </div>
+  <div class="wizard">
+
     <!-- Step 1 -->
-    <section class="step active" data-step="1">
-      <h2>1. Basic Info</h2>
-      <label>Full Name</label><input type="text" id="name" required />
-      <label>Age Group</label><select id="ageGroup"><option value="below60">Below 60</option><option value="sixtyplus">60 & Above</option></select>
-      <label>Tax Regime</label><select id="regime"><option value="old">Old Regime</option><option value="new">New Regime</option></select>
-      <div class="nav-buttons"><span></span><button type="button" id="nextBtn1">Next &rarr;</button></div>
-    </section>
+    <div id="step1" class="step active">
+      <h2>Basic Information</h2>
+      <label for="name">Name</label>
+      <input type="text" id="name" placeholder="Your Name">
+      <label for="ageGroup">Age Group</label>
+      <select id="ageGroup">
+        <option value="below60">Below 60</option>
+        <option value="above60">Above 60</option>
+      </select>
+      <button class="next-btn" data-next="step2">Next</button>
+    </div>
+
     <!-- Step 2 -->
-    <section class="step" data-step="2">
-      <h2>2. Salary Income</h2>
-      <label>Received salary?</label><select id="hasSalary"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="salaryFields">
-        <label>Gross Salary (Rs.)</label><input type="number" id="grossSalary" min="0" />
-        <label>Basic Pay (Rs.)</label><input type="number" id="basicPay" min="0" />
-        <label>HRA Received (Rs.)</label><input type="number" id="hraReceived" min="0" />
-        <label>Rent Paid (Rs.)</label><input type="number" id="rentPaid" min="0" />
-        <label>Standard Deduction (Rs.)</label><input type="number" id="stdDeduction" min="0" value="50000" />
-        <div class="error" id="errStdDeduction"></div>
-        <label>Professional Tax (Rs.)</label><input type="number" id="profTax" min="0" value="0" />
-        <div class="summary" id="salarySummary">Net Salary Income: Rs. 0</div>
-      </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn2">Next &rarr;</button></div>
-    </section>
+    <div id="step2" class="step">
+      <h2>Income from Salary</h2>
+      <label for="grossSalary">Gross Salary (₹) </label>
+      <input type="number" id="grossSalary" min="0">
+      <label for="professionalTax">Professional Tax (₹)</label>
+      <input type="number" id="professionalTax" min="0">
+      <label for="hraExempt">HRA Exempt (₹)</label>
+      <input type="text" id="hraExempt" readonly>
+      <label for="otherExempt">Other Exempted Allowance (₹)</label>
+      <input type="number" id="otherExempt" min="0">
+      <div class="section-separator"></div>
+      <h3>For HRA Calculation</h3>
+      <label for="basicPay">Basic Pay (₹)</label>
+      <input type="number" id="basicPay" min="0">
+      <label for="hraReceived">HRA Received (₹)</label>
+      <input type="number" id="hraReceived" min="0">
+      <label for="rentPaid">Rent Paid (₹)</label>
+      <input type="number" id="rentPaid" min="0">
+      <div class="error" id="step2Error"></div>
+      <div class="section-separator"></div>
+      <h3>Summary</h3>
+      <p>Gross Salary: ₹<span id="sumGrossSalary">0.00</span></p>
+      <p>Total Exemptions: ₹<span id="sumTotalExemptions">0.00</span></p>
+      <button class="prev-btn" data-prev="step1">Back</button>
+      <button class="next-btn" id="step2Next" data-next="step3">Next</button>
+    </div>
+
     <!-- Step 3 -->
-    <section class="step" data-step="3">
-      <h2>3. Business Income</h2>
-      <label>Received business income?</label><select id="hasBusiness"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="businessFields">
-        <label>Business Income (Rs.)</label><input type="number" id="businessIncome" min="0" />
-        <div class="summary" id="businessSummary">Net Business Income: Rs. 0</div>
-      </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn3">Next &rarr;</button></div>
-    </section>
+    <div id="step3" class="step">
+      <h2>Income from House Property</h2>
+      <label for="rentReceived">Rent Received (₹)</label>
+      <input type="number" id="rentReceived" min="0">
+      <label for="municipalTax">Municipal Tax Paid (₹)</label>
+      <input type="number" id="municipalTax" min="0">
+      <label for="stdDeduction">Standard Deduction (30%) (₹)</label>
+      <input type="text" id="stdDeduction" readonly>
+      <label for="interestLoan">Interest from Housing Loan (₹)</label>
+      <input type="number" id="interestLoan" min="0">
+      <label for="netHHP">Net House Property Income (₹)</label>
+      <input type="text" id="netHHP" readonly>
+      <button class="prev-btn" data-prev="step2">Back</button>
+      <button class="next-btn" data-next="step4">Next</button>
+    </div>
+
     <!-- Step 4 -->
-    <section class="step" data-step="4">
-      <h2>4. House Property</h2>
-      <label>Rent or loan?</label><select id="hasHouseProperty"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="houseFields">
-        <label>Rent Received (Rs.)</label><input type="number" id="rentReceived" min="0" />
-        <label>Home Loan Interest (Rs.)</label><input type="number" id="homeLoanInterest" min="0" />
-        <div class="summary" id="houseSummary">Net House Property Income: Rs. 0</div>
-      </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn4">Next &rarr;</button></div>
-    </section>
+    <div id="step4" class="step">
+      <h2>Income from Other Sources</h2>
+      <label for="savingsIncome">Savings Account Interest (₹)</label>
+      <input type="number" id="savingsIncome" min="0">
+      <label for="fdIncome">Fixed Deposit Interest (₹)</label>
+      <input type="number" id="fdIncome" min="0">
+      <label for="dividendIncome">Dividend Received (₹)</label>
+      <input type="number" id="dividendIncome" min="0">
+      <div class="section-separator"></div>
+      <h3>Summary</h3>
+      <p>Total Other Income: ₹<span id="sumOtherIncome">0.00</span></p>
+      <button class="prev-btn" data-prev="step3">Back</button>
+      <button class="next-btn" data-next="step5">Next</button>
+    </div>
+
     <!-- Step 5 -->
-    <section class="step" data-step="5">
-      <h2>5. Other Sources</h2>
-      <label>Interest/Dividend?</label><select id="hasOther"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="otherFields">
-        <label>Savings Interest (Rs.)</label><input type="number" id="savingsInterest" min="0" />
-        <label>FD Interest (Rs.)</label><input type="number" id="fdInterest" min="0" />
-        <label>Dividend (Rs.)</label><input type="number" id="dividendReceived" min="0" />
-        <div class="summary" id="otherSummary">Net Other Income: Rs. 0</div>
-      </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn5">Next &rarr;</button></div>
-    </section>
+    <div id="step5" class="step">
+      <h2>Chapter VI A Deductions</h2>
+      <label for="ded80C">80C Deduction (Max ₹150,000)</label>
+      <input type="number" id="ded80C" min="0">
+      <label for="ded80CCD">80CCD Deduction (Combined with 80C ≤ ₹200,000)</label>
+      <input type="number" id="ded80CCD" min="0">
+      <label for="ded80CCD2">80CCD2 Deduction</label>
+      <input type="number" id="ded80CCD2" min="0">
+      <label for="donationPaid">Donation Paid (₹) (80G 50% deductible)</label>
+      <input type="number" id="donationPaid" min="0">
+      <div class="section-separator"></div>
+      <h3>Tax Saving Interest (80TTA / 80TTB)</h3>
+      <label for="ded80TTA">80TTA (Max ₹10,000)</label>
+      <input type="text" id="ded80TTA" readonly>
+      <label for="ded80TTB">80TTB (Max ₹50,000)</label>
+      <input type="text" id="ded80TTB" readonly>
+      <div class="section-separator"></div>
+      <h3>Summary</h3>
+      <p>Total Chapter VI A Deductions: ₹<span id="sumChap6A">0.00</span></p>
+      <button class="prev-btn" data-prev="step4">Back</button>
+      <button class="next-btn" data-next="step6">Next</button>
+    </div>
+
     <!-- Step 6 -->
-    <section class="step" data-step="6">
-      <h2>6. Capital Gains</h2>
-      <label>Sold shares?</label><select id="hasCG"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="cgFields">
-        <label>STCG (Rs.)</label><input type="number" id="stcgAmount" min="0" />
-        <label>LTCG (Rs.)</label><input type="number" id="ltcgAmount" min="0" />
-        <div class="summary" id="cgSummary">STCG: Rs. 0, LTCG: Rs. 0</div>
-      </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn6">Next &rarr;</button></div>
-    </section>
+    <div id="step6" class="step">
+      <h2>80D Deductions</h2>
+      <label for="premSelf">Insurance Premium Self (₹)</label>
+      <input type="number" id="premSelf" min="0">
+      <label for="preventiveCheck">Preventive Health Checkup (₹)</label>
+      <input type="number" id="preventiveCheck" min="0">
+      <label for="premParent">Parent Insurance (₹)</label>
+      <input type="number" id="premParent" min="0">
+      <label for="medExpend">Medical Expenditure (₹)</label>
+      <input type="number" id="medExpend" min="0">
+      <div class="section-separator"></div>
+      <h3>Summary</h3>
+      <p>Total 80D Deductions: ₹<span id="sum80D">0.00</span></p>
+      <button class="prev-btn" data-prev="step5">Back</button>
+      <button class="next-btn" data-next="step7">Next</button>
+    </div>
+
     <!-- Step 7 -->
-    <section class="step" data-step="7">
-      <h2>7. 80C / 80CCD(1B)</h2>
-      <label>Investments?</label><select id="has80C"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="field80C">
-        <label>80C (Max ₹150k)</label><input type="number" id="ded80C" min="0" max="150000" />
-        <label>80CCD(1B) (Max ₹50k)</label><input type="number" id="ded80CCD1B" min="0" max="50000" />
-        <div class="summary" id="summary80C">Total: Rs. 0</div>
+    <div id="step7" class="step">
+      <h2>Review & Compare</h2>
+      <table class="result-table">
+        <thead>
+          <tr><th>Particulars</th><th>Old Regime (₹)</th><th>New Regime (₹)</th></tr>
+        </thead>
+        <tbody id="reviewBody"></tbody>
+      </table>
+      <div style="margin-top:1rem">
+        <h3>Tax Calculation Details</h3>
+        <table class="result-table">
+          <thead>
+            <tr><th>Component</th><th>Old Regime (₹)</th><th>New Regime (₹)</th></tr>
+          </thead>
+          <tbody id="taxBreakdownBody"></tbody>
+        </table>
       </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn7">Next &rarr;</button></div>
-    </section>
-    <!-- Step 8 -->
-    <section class="step" data-step="8">
-      <h2>8. 80D (Health Insurance)</h2>
-      <label>Paid health insurance?</label><select id="has80D"><option value="yes">Yes</option><option value="no">No</option></select>
-      <div id="field80D">
-        <label>Health Check-up (Max ₹5k)</label><input type="number" id="selfHealthCheck" min="0" />
-        <label>Self/Family Ins. (Max ₹25k or ₹50k SC)</label><input type="number" id="selfInsurance" min="0" />
-        <label>Senior Ins. (Max ₹50k)</label><input type="number" id="seniorInsurance" min="0" />
-        <label>Medical Exp (Max ₹50k)</label><input type="number" id="medicalExp" min="0" />
-        <div class="summary" id="summary80D">Total 80D: Rs. 0</div>
-      </div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="nextBtn8">Next &rarr;</button></div>
-    </section>
-    <!-- Step 9 -->
-    <section class="step" data-step="9">
-      <h2>9. Review & Compute</h2>
-      <div class="summary" id="finalSummary"></div>
-      <div class="result" id="taxResult"></div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="computeBtn">Compute & Compare &rarr;</button></div>
-    </section>
-    <!-- Step 10 -->
-    <section class="step" data-step="10">
-      <h2>10. Compare Regimes</h2>
-      <div class="compare" id="compareSummary"></div>
-      <div class="nav-buttons"><button class="backBtn">&larr; Back</button><button type="button" id="downloadPdfBtn">Download PDF</button><button type="button" id="finishBtn">Finish</button></div>
-    </section>
-  </form>
+      <button class="prev-btn" data-prev="step6">Back</button>
+    </div>
+  </div>
+
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const steps = Array.from(document.querySelectorAll('.step'));
-      const data = {};
-      const round10 = v => Math.round(v/10)*10;
-      const toNum = id => parseFloat(document.getElementById(id).value) || 0;
-      // Conditional display
-      const cond = { hasSalary:'salaryFields', hasBusiness:'businessFields', hasHouseProperty:'houseFields', hasOther:'otherFields', hasCG:'cgFields', has80C:'field80C', has80D:'field80D' };
-      Object.entries(cond).forEach(([s,f])=>{ const sel=document.getElementById(s), fld=document.getElementById(f); sel.onchange=()=>fld.style.display=sel.value==='yes'?'block':'none'; sel.onchange(); });
-      const showStep = i => steps.forEach((s,idx)=>s.classList.toggle('active', idx===i-1));
-      const slabs={old:[250000,500000,1000000],new:[300000,600000,900000,1200000,1500000]};
-      const rates={old:[0,0.05,0.2,0.3],new:[0,0.05,0.1,0.15,0.2,0.3]};
-      function calcTax(i,r){let t=0,p=0;rates[r].forEach((rt,j)=>{const m=slabs[r][j]||Infinity; if(i>m){t+=(m-p)*rt;p=m;}else{t+=(i-p)*rt;p=i;} }); if(r==='new'&&i<=700000)t=Math.max(0,t-12500);return round10(t*1.04);}      
-      function collect(i){switch(i){case 0:data.name=document.getElementById('name').value;data.age=document.getElementById('ageGroup').value;data.regime=document.getElementById('regime').value;document.getElementById('stdDeduction').value=data.regime==='new'?75000:50000;break;case 1:const g=toNum('grossSalary'),s=toNum('stdDeduction');document.getElementById('errStdDeduction').textContent=s>g?'Cannot exceed gross salary':'';let net=0,hra=0;if(document.getElementById('hasSalary').value==='yes'){const b=toNum('basicPay'),hr=toNum('hraReceived'),r=toNum('rentPaid'),pt=toNum('profTax');hra=round10(Math.max(0,Math.min(hr,r-0.1*b,0.5*b)));net=round10(g-Math.min(s,g)-pt-hra);}data.salary=net;data.hraEx=hra;document.getElementById('salarySummary').innerHTML=`Net Salary: Rs. ${net}<br>HRA Exempt: Rs. ${hra}`;break;case 2:data.business=document.getElementById('hasBusiness').value==='yes'?round10(toNum('businessIncome')):0;document.getElementById('businessSummary').textContent=`Net Business: Rs. ${data.business}`;break;case 3:let hp=document.getElementById('hasHouseProperty').value==='yes'?round10(toNum('rentReceived')-toNum('homeLoanInterest')):0;data.house=Math.max(hp,-200000);document.getElementById('houseSummary').textContent=`Net House: Rs. ${data.house}`;break;case 4:data.other=document.getElementById('hasOther').value==='yes'?round10(toNum('savingsInterest')+toNum('fdInterest')+toNum('dividendReceived')):0;document.getElementById('otherSummary').textContent=`Net Other: Rs. ${data.other}`;break;case 5:if(document.getElementById('hasCG').value==='yes'){data.stcg=round10(toNum('stcgAmount'));data.ltcg=round10(toNum('ltcgAmount'));}else{data.stcg=0;data.ltcg=0;}document.getElementById('cgSummary').textContent=`STCG: Rs. ${data.stcg}, LTCG: Rs. ${data.ltcg}`;break;case 6:let c1=toNum('ded80C'),c2=toNum('ded80CCD1B');c1=Math.min(c1,150000);c2=Math.min(c2,50000);data.d80C=round10(c1);data.d80CCD=round10(c2);document.getElementById('summary80C').textContent=`Total: Rs. ${round10(data.d80C+data.d80CCD)}`;break;case 7:let hc=toNum('selfHealthCheck'),ip=toNum('selfInsurance'),sip=toNum('seniorInsurance'),me=toNum('medicalExp');hc=Math.min(hc,5000);ip=Math.min(ip,data.age==='sixtyplus'?50000:25000);sip=Math.min(sip,50000);me=Math.min(me,50000);data.d80D=round10(hc+ip+sip+me);document.getElementById('summary80D').textContent=`Total 80D: Rs. ${data.d80D}`;break;} }
-      function finalize(){const gross=round10((data.salary||0)+(data.business||0)+(data.house||0)+(data.other||0)+(data.stcg||0)+(data.ltcg||0));const ded=round10((data.d80C||0)+(data.d80CCD||0)+(data.d80D||0));const net=round10(gross-ded);document.getElementById('finalSummary').innerHTML=`<p>Gross: Rs. ${gross}</p><p>Deduction: Rs. ${ded}</p><p>Net Taxable: Rs. ${net}</p>`;}      
-      // Bind real-time
-      ['salaryFields','businessFields','houseFields','otherFields','cgFields','field80C','field80D'].forEach((id,idx)=>{document.querySelectorAll(`#${id} input, #${id} select`).forEach(el=>el.addEventListener('input',()=>collect(idx+1)));});
-      // Next
-      for(let i=1;i<=8;i++){document.getElementById('nextBtn'+i).addEventListener('click',()=>{collect(i-1);if(i===8)finalize();showStep(i+1);});}
-      // Back
-      document.querySelectorAll('.backBtn').forEach(btn=>btn.addEventListener('click',()=>{const i=+btn.closest('.step').dataset.step;showStep(i-1);}));
-      // Compute & Compare
-      document.getElementById('computeBtn').addEventListener('click',()=>{collect(8);finalize();const net=round10((data.salary||0)+(data.business||0)+(data.house||0)+(data.other||0)+(data.stcg||0)+(data.ltcg||0)-(data.d80C||0)-(data.d80CCD||0)-(data.d80D||0));const oldT=calcTax(net,'old'),newT=calcTax(net,'new');document.getElementById('taxResult').textContent=`Old: Rs. ${oldT}, New: Rs. ${newT}`;document.getElementById('compareSummary').innerHTML=`<p>Old: Rs. ${oldT}</p><p>New: Rs. ${newT}</p><p>Diff: Rs. ${Math.abs(oldT-newT)}</p>`;showStep(10);});
-      // Download PDF
-      document.getElementById('downloadPdfBtn').addEventListener('click',()=>{html2pdf().from(document.getElementById('taxForm')).save('tax-summary.pdf');});
-      // Finish
-      document.getElementById('finishBtn').addEventListener('click',()=>showStep(1));
+  document.addEventListener('DOMContentLoaded', () => {
+    function showStep(id) {
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById(id)?.classList.add('active');
+    }
+
+    // Navigation
+    document.querySelectorAll('.next-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (btn.id==='step2Next' && !validateStep2()) return;
+        showStep(btn.dataset.next);
+        if (btn.dataset.next==='step3') { calculateHRA(); calculateHHP(); }
+        if (btn.dataset.next==='step7') renderReview();
+      });
     });
+    document.querySelectorAll('.prev-btn').forEach(btn => {
+      btn.addEventListener('click', () => showStep(btn.dataset.prev));
+    });
+
+    // Prevent negative
+    document.querySelectorAll('input[type="number"]').forEach(i => {
+      i.addEventListener('input', ()=>{ if (+i.value<0) i.value='' });
+    });
+
+    // Step 2
+    function validateStep2() {
+      const g = +document.getElementById('grossSalary').value||0;
+      const p = +document.getElementById('professionalTax').value||0;
+      const o = +document.getElementById('otherExempt').value||0;
+      const b = +document.getElementById('basicPay').value||0;
+      const h = +document.getElementById('hraReceived').value||0;
+      const e = document.getElementById('step2Error');
+      let msg='';
+      if (p>30000) msg='Professional Tax cannot exceed ₹30,000.';
+      else if (o+b+h>g) msg='Other Exempt + Basic Pay + HRA Received cannot exceed Gross Salary.';
+      e.innerText=msg;
+      return !msg;
+    }
+    ['grossSalary','professionalTax','otherExempt'].forEach(id=>
+      document.getElementById(id).addEventListener('input', updateSummary)
+    );
+    ['basicPay','hraReceived','rentPaid'].forEach(id=>
+      document.getElementById(id).addEventListener('input', ()=>{ calculateHRA(); updateSummary() })
+    );
+    function calculateHRA() {
+      const b=+document.getElementById('basicPay').value||0;
+      const h=+document.getElementById('hraReceived').value||0;
+      const r=+document.getElementById('rentPaid').value||0;
+      const ex=Math.max(0, Math.min(h, r-0.1*b, 0.5*b));
+      document.getElementById('hraExempt').value = ex.toFixed(2);
+    }
+    function updateSummary() {
+      const g=+document.getElementById('grossSalary').value||0;
+      const p=+document.getElementById('professionalTax').value||0;
+      const h=+document.getElementById('hraExempt').value||0;
+      const o=+document.getElementById('otherExempt').value||0;
+      document.getElementById('sumGrossSalary').innerText = g.toFixed(2);
+      document.getElementById('sumTotalExemptions').innerText = (p+h+o).toFixed(2);
+    }
+
+    // Step 3
+    ['rentReceived','municipalTax','interestLoan'].forEach(id=>
+      document.getElementById(id).addEventListener('input', calculateHHP)
+    );
+    function calculateHHP() {
+      const r=+document.getElementById('rentReceived').value||0;
+      let m=+document.getElementById('municipalTax').value||0;
+      const i=+document.getElementById('interestLoan').value||0;
+      m=Math.min(m,r);
+      let net;
+      if (r>0) {
+        const std=Math.max(0,(r-m)*0.3);
+        document.getElementById('stdDeduction').value = std.toFixed(2);
+        net = r-m-std-i;
+      } else {
+        document.getElementById('stdDeduction').value = '0.00';
+        net = r-i;
+      }
+      net = Math.max(net,-200000);
+      document.getElementById('netHHP').value = net.toFixed(2);
+    }
+
+    // Step 4
+    ['savingsIncome','fdIncome','dividendIncome'].forEach(id=>
+      document.getElementById(id).addEventListener('input', updateOtherSummary)
+    );
+    function updateOtherSummary() {
+      const s=+document.getElementById('savingsIncome').value||0;
+      const f=+document.getElementById('fdIncome').value||0;
+      const d=+document.getElementById('dividendIncome').value||0;
+      document.getElementById('sumOtherIncome').innerText=(s+f+d).toFixed(2);
+    }
+
+    // Step 5
+    ['ded80C','ded80CCD','ded80CCD2','donationPaid'].forEach(id=>
+      document.getElementById(id).addEventListener('input', updateChap6ASummary)
+    );
+    ['savingsIncome','fdIncome','ageGroup'].forEach(id=>
+      document.getElementById(id).addEventListener('change', updateInterestDeductions)
+    );
+    function updateChap6ASummary() {
+      const raw80C=+document.getElementById('ded80C').value||0;
+      let raw80CCD=+document.getElementById('ded80CCD').value||0;
+      const rawCCD2=+document.getElementById('ded80CCD2').value||0;
+      const don=(+document.getElementById('donationPaid').value||0)*0.5;
+      const tta=+document.getElementById('ded80TTA').value||0;
+      const ttb=+document.getElementById('ded80TTB').value||0;
+      const cap80C=Math.min(raw80C,150000);
+      let cap80CCD=Math.min(raw80CCD,200000);
+      if(cap80C+cap80CCD>200000) cap80CCD=200000-cap80C;
+      const gross=+document.getElementById('grossSalary').value||0;
+      const otherE=+document.getElementById('otherExempt').value||0;
+      const hraR=+document.getElementById('hraReceived').value||0;
+      let base=+document.getElementById('basicPay').value||0;
+      if(base===0) base=Math.max(0,gross-otherE-hraR);
+      const capOld2=base*0.10;
+      const cap80CCD2Old=Math.min(rawCCD2,capOld2);
+      const totalOld=cap80C+cap80CCD+cap80CCD2Old+don+tta+ttb;
+      document.getElementById('sumChap6A').innerText=totalOld.toFixed(2);
+    }
+    function updateInterestDeductions() {
+      const age=document.getElementById('ageGroup').value;
+      const s=+document.getElementById('savingsIncome').value||0;
+      const f=+document.getElementById('fdIncome').value||0;
+      let tta=0,ttb=0;
+      if(age==='below60') tta=Math.min(s,10000);
+      else ttb=Math.min(s+f,50000);
+      document.getElementById('ded80TTA').value=tta.toFixed(2);
+      document.getElementById('ded80TTB').value=ttb.toFixed(2);
+      updateChap6ASummary();
+    }
+
+    // Step 6
+    ['premSelf','preventiveCheck','premParent','medExpend'].forEach(id=>
+      document.getElementById(id).addEventListener('input', update80DSummary)
+    );
+    function update80DSummary() {
+      let s=+document.getElementById('premSelf').value||0;
+      let p=+document.getElementById('preventiveCheck').value||0;
+      s=Math.min(s,25000); p=Math.min(p,5000);
+      if(s+p>25000) p=25000-s;
+      let par=+document.getElementById('premParent').value||0;
+      let m=+document.getElementById('medExpend').value||0;
+      par=Math.min(par,50000); m=Math.min(m,50000);
+      if(par+m>50000) m=50000-par;
+      document.getElementById('sum80D').innerText=(s+p+par+m).toFixed(2);
+    }
+
+    // Step 7 & Tax
+    function renderReview() {
+      calculateHRA(); calculateHHP(); updateOtherSummary();
+      updateInterestDeductions(); updateChap6ASummary(); update80DSummary();
+
+      const gross = +document.getElementById('grossSalary').value||0;
+      const prof  = +document.getElementById('professionalTax').value||0;
+      const hra   = +document.getElementById('hraExempt').value||0;
+      const otherE= +document.getElementById('otherExempt').value||0;
+      const basicP= +document.getElementById('basicPay').value||0;
+      const hhpOld= +document.getElementById('netHHP').value||0;
+      const hhpNew= Math.max(0,hhpOld);
+      const others=(+document.getElementById('savingsIncome').value||0)
+                   +(+document.getElementById('fdIncome').value||0)
+                   +(+document.getElementById('dividendIncome').value||0);
+
+      // Gross totals
+      let grossOld = Math.max(0, gross+hhpOld+others);
+      let grossNew = Math.max(0, gross+hhpNew+others);
+
+      // Std deductions
+      const stdOld = gross>0?Math.min(50000,gross):0;
+      const stdNew = gross>0?Math.min(75000,gross):0;
+
+      // Exemptions
+      let rawEx = prof+hra+otherE;
+      const exOld = Math.min(rawEx, Math.max(0, grossOld-stdOld));
+      const exNew = 0;
+
+      // Chapter VIA
+      let raw6A = +document.getElementById('sumChap6A').innerText||0;
+      const cap6AOld = Math.max(0, grossOld-stdOld-exOld);
+      const d6Aold = Math.min(raw6A, cap6AOld);
+      let capNew2;
+      {
+        let base = basicP||Math.max(0, gross-otherE-hra);
+        capNew2 = Math.min(+document.getElementById('ded80CCD2').value||0, base*0.14);
+      }
+      const d6Anew = capNew2;
+      const d8old = Math.min(+document.getElementById('sum80D').innerText||0, Math.max(0, grossOld-stdOld-exOld-d6Aold));
+      const d8new = 0;
+
+      // Taxable incomes
+      const netOld = Math.max(0, grossOld-stdOld-exOld-d6Aold-d8old);
+      const netNew = Math.max(0, grossNew-stdNew-d6Anew);
+
+      // Review table
+      const reviewBody = document.getElementById('reviewBody');
+      reviewBody.innerHTML = '';
+      [
+        ['Salary', gross, gross],
+        ['House Property', hhpOld, hhpNew],
+        ['Other Sources', others, others],
+        ['Gross Total Income', grossOld, grossNew],
+        ['Standard Deduction', stdOld, stdNew],
+        ['Exemptions', exOld, exNew],
+        ['Chapter VI A', d6Aold, d6Anew],
+        ['80D', d8old, d8new],
+        ['Taxable Income', netOld, netNew]
+      ].forEach(row=>{
+        const tr=document.createElement('tr');
+        row.forEach(v=>{
+          const td=document.createElement('td');
+          td.innerText=typeof v==='number'?v.toFixed(2):v;
+          tr.appendChild(td);
+        });
+        reviewBody.appendChild(tr);
+      });
+
+      // Tax breakdown
+      const tb=document.getElementById('taxBreakdownBody');
+      tb.innerHTML='';
+      if(netOld>0||netNew>0){
+        const oldD=computeTaxOld(netOld, document.getElementById('ageGroup').value);
+        const newD=computeTaxNew(netNew);
+        [
+          ['Basic Tax', oldD.basicTax, newD.basicTax],
+          ['Surcharge', oldD.surcharge, newD.surcharge],
+          ['Rebate',    oldD.rebate,    newD.rebate   ],
+          ['Cess (4%)', oldD.cess,      newD.cess     ],
+          ['Total Tax Payable', oldD.totalTax, newD.totalTax]
+        ].forEach(row=>{
+          const tr=document.createElement('tr');
+          row.forEach(v=>{
+            const td=document.createElement('td');
+            td.innerText=typeof v==='number'?v.toFixed(2):v;
+            tr.appendChild(td);
+          });
+          tb.appendChild(tr);
+        });
+      } else {
+        const tr=document.createElement('tr');
+        const td=document.createElement('td');
+        td.colSpan=3; td.innerText='No tax due';
+        tr.appendChild(td); tb.appendChild(tr);
+      }
+    }
+
+    // Tax functions
+    function computeTaxOld(income, age) {
+      let tax=0;
+      if(age==='below60'){
+        if(income>1000000) tax=112500+(income-1000000)*0.30;
+        else if(income>500000) tax=12500+(income-500000)*0.20;
+        else if(income>250000) tax=(income-250000)*0.05;
+      } else {
+        if(income>1000000) tax=110000+(income-1000000)*0.30;
+        else if(income>500000) tax=10000+(income-500000)*0.20;
+        else if(income>300000) tax=(income-300000)*0.05;
+      }
+      let sRate=0;
+      if(income>50000000) sRate=0.37;
+      else if(income>20000000) sRate=0.25;
+      else if(income>10000000) sRate=0.15;
+      else if(income>5000000 ) sRate=0.10;
+      const surcharge=tax*sRate;
+      const rebate   = income<=500000?tax:0;
+      const base     = tax+surcharge-rebate;
+      const cess     = base*0.04;
+      return { basicTax:tax, surcharge, rebate, cess, totalTax:base+cess };
+    }
+    function computeTaxNew(income) {
+      let tax=0;
+      if(income>1500000) tax=140000+(income-1500000)*0.30;
+      else if(income>1200000) tax=80000+(income-1200000)*0.20;
+      else if(income>1000000) tax=50000+(income-1000000)*0.15;
+      else if(income>700000) tax=20000+(income-700000)*0.10;
+      else if(income>300000) tax=(income-300000)*0.05;
+      let sRate=0;
+      if(income>20000000) sRate=0.25;
+      else if(income>10000000) sRate=0.15;
+      else if(income>5000000 ) sRate=0.10;
+      const surcharge=tax*sRate;
+      const rebate   = income<=700000?tax:0;
+      const base     = tax+surcharge-rebate;
+      const cess     = base*0.04;
+      return { basicTax:tax, surcharge, rebate, cess, totalTax:base+cess };
+    }
+
+    window.renderReview = renderReview;
+  });
   </script>
+    <button class="download-btn" onclick="downloadPDF()">Download PDF</button>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const steps = document.querySelectorAll('.step');
+    const progressBar = document.getElementById('progressBar');
+    function updateProgressBar() {
+      const activeIndex = Array.from(steps).findIndex(s => s.classList.contains('active'));
+      const progress = ((activeIndex + 1) / steps.length) * 100;
+      progressBar.style.width = progress + '%';
+    }
+    const observer = new MutationObserver(updateProgressBar);
+    steps.forEach(step => observer.observe(step, { attributes: true, attributeFilter: ['class'] }));
+    updateProgressBar();
+  });
+
+  function downloadPDF() {
+    const element = document.querySelector('.wizard');
+    const opt = {
+      margin:       0.5,
+      filename:     'Tax_Calculation_Summary.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2 },
+      jsPDF:        { unit: 'in', format: 'letter', orientation: 'portrait' }
+    };
+    html2pdf().set(opt).from(element).save();
+  }
+</script>
 </body>
 </html>
+
